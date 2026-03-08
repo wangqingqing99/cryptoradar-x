@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CryptoRadar X — 加密生态热力雷达</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #F0B90B;
+    --gold-dim: rgba(240,185,11,0.15);
+    --gold-glow: rgba(240,185,11,0.4);
+    --bg: #0A0C12;
+    --bg2: #0E1018;
+    --panel: rgba(255,255,255,0.03);
+    --border: rgba(240,185,11,0.2);
+    --green: #00D4A0;
+    --red: #FF4D6D;
+    --blue: #4D9FFF;
+    --purple: #A855F7;
+    --text: #E8EAF0;
+    --text-dim: rgba(232,234,240,0.5);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', 'Noto Sans SC', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(240,185,11,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(240,185,11,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Radial glow center */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(240,185,11,0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,12,18,0.9);
+    backdrop-filter: blur(20px);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--gold);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 20px var(--gold-glow);
+  }
+
+  .logo-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--gold);
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .header-center {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+  }
+
+  .time-btn {
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .time-btn.active {
+    background: var(--gold);
+    color: #000;
+    font-weight: 700;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    width: 220px;
+  }
+
+  .search-box input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    width: 100%;
+  }
+
+  .search-box input::placeholder { color: var(--text-dim); }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(0,212,160,0.1);
+    border: 1px solid rgba(0,212,160,0.3);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--green);
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+  }
+
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* ─── MAIN LAYOUT ─── */
+  .main {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 0;
+    height: calc(100vh - 73px);
+  }
+
+  /* ─── BUBBLE CANVAS ─── */
+  .canvas-area {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .canvas-title {
+    position: absolute;
+    top: 24px;
+    left: 32px;
+    z-index: 5;
+  }
+
+  .canvas-title h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .canvas-title p {
+    font-size: 12px;
+    color: rgba(232,234,240,0.3);
+    margin-top: 2px;
+  }
+
+  /* Storm Warning */
+  .storm-alert {
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    background: rgba(255,77,109,0.15);
+    border: 1px solid rgba(255,77,109,0.5);
+    border-radius: 30px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    color: var(--red);
+    letter-spacing: 1px;
+    animation: stormPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes stormPulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(255,77,109,0.3); }
+    50% { box-shadow: 0 0 25px rgba(255,77,109,0.6); }
+  }
+
+  #bubbleCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    border-left: 1px solid var(--border);
+    background: rgba(14,16,24,0.8);
+    backdrop-filter: blur(20px);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .sidebar::-webkit-scrollbar { display: none; }
+
+  .sidebar-section {
+    padding: 20px;
+    border-bottom: 1px solid rgba(240,185,11,0.08);
+  }
+
+  .section-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Stat cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .stat-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  /* Topic list */
+  .topic-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    background: var(--panel);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .topic-item:hover {
+    border-color: var(--border);
+    background: rgba(240,185,11,0.05);
+  }
+
+  .topic-rank {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    color: var(--text-dim);
+    width: 20px;
+  }
+
+  .topic-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .topic-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .topic-heat {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(240,185,11,0.1);
+    color: var(--gold);
+  }
+
+  .topic-change {
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .up { color: var(--green); }
+  .down { color: var(--red); }
+
+  /* KOL list */
+  .kol-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer;
+  }
+
+  .kol-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+    border: 2px solid transparent;
+  }
+
+  .kol-info { flex: 1; min-width: 0; }
+
+  .kol-name {
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .kol-meta {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 1px;
+  }
+
+  .kol-score {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    color: var(--gold);
+    text-align: right;
+  }
+
+  .kol-score span {
+    display: block;
+    font-size: 10px;
+    color: var(--green);
+  }
+
+  /* Prediction widget */
+  .prediction-widget {
+    background: linear-gradient(135deg, rgba(240,185,11,0.06), rgba(240,185,11,0.02));
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .pred-question {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+
+  .pred-bars { display: flex; flex-direction: column; gap: 8px; }
+
+  .pred-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .pred-label {
+    font-size: 12px;
+    width: 70px;
+    flex-shrink: 0;
+  }
+
+  .pred-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .pred-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1s ease;
+  }
+
+  .pred-pct {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    width: 32px;
+    text-align: right;
+  }
+
+  .pred-vote-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 8px;
+    background: var(--gold-dim);
+    border: 1px solid var(--gold-glow);
+    border-radius: 6px;
+    color: var(--gold);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .pred-vote-btn:hover {
+    background: var(--gold);
+    color: #000;
+  }
+
+  .pred-count {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+
+  /* My influence */
+  .my-influence {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+
+  .influence-input {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .influence-input input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 10px;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    outline: none;
+  }
+
+  .influence-input button {
+    padding: 7px 12px;
+    background: var(--gold);
+    border: none;
+    border-radius: 6px;
+    color: #000;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .influence-result { display: flex; flex-direction: column; gap: 6px; }
+
+  .influence-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+  }
+
+  .influence-topic { color: var(--text-dim); }
+
+  .influence-rank {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    color: var(--gold);
+  }
+
+  /* ─── TOOLTIP ─── */
+  .tooltip {
+    position: fixed;
+    z-index: 100;
+    background: rgba(14,16,24,0.97);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    min-width: 200px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    backdrop-filter: blur(20px);
+  }
+
+  .tooltip.visible { opacity: 1; }
+
+  .tooltip-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .tooltip-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
+    color: var(--text-dim);
+  }
+
+  .tooltip-row span:last-child { color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🦐</div>
+    <div>
+      <div class="logo-text">CryptoRadar X</div>
+      <div class="logo-sub">Powered by OpenClaw · Binance Square</div>
+    </div>
+  </div>
+
+  <div class="header-center">
+    <button class="time-btn active" onclick="setTime(this,'24h')">24H</button>
+    <button class="time-btn" onclick="setTime(this,'7d')">7D</button>
+    <button class="time-btn" onclick="setTime(this,'30d')">30D</button>
+  </div>
+
+  <div class="header-right">
+    <div class="search-box">
+      <span style="color:var(--text-dim);font-size:14px">🔍</span>
+      <input type="text" placeholder="搜索话题 / KOL...">
+    </div>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      LIVE
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- CANVAS -->
+  <div class="canvas-area">
+    <div class="canvas-title">
+      <h2>话题热力星系</h2>
+      <p>气泡大小 = 阅读量 × 互动权重 · 点击话题查看KOL分布</p>
+    </div>
+
+    <div class="storm-alert">
+      🌪️ 话题风暴 · BTC ETF 热度↑ 347% · 过去1小时
+    </div>
+
+    <canvas id="bubbleCanvas"></canvas>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- Stats -->
+    <div class="sidebar-section">
+      <div class="section-label">实时概览</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">2,847</div>
+          <div class="stat-label">监控推文</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">134</div>
+          <div class="stat-label">活跃KOL</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--green)">68%</div>
+          <div class="stat-label">正面情绪</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">18</div>
+          <div class="stat-label">热点话题</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Topic Ranking -->
+    <div class="sidebar-section">
+      <div class="section-label">🔥 话题热榜</div>
+      <div id="topicList"></div>
+    </div>
+
+    <!-- Black Horse KOL -->
+    <div class="sidebar-section">
+      <div class="section-label">🚀 黑马KOL榜</div>
+      <div id="kolList"></div>
+    </div>
+
+    <!-- Prediction -->
+    <div class="sidebar-section">
+      <div class="section-label">⚡ 话题预测</div>
+      <div class="prediction-widget">
+        <div class="pred-question">BTC ETF 话题接下来1小时热度走势？</div>
+        <div class="pred-bars">
+          <div class="pred-option">
+            <div class="pred-label">🔥 继续涨</div>
+            <div class="pred-bar-bg">
+              <div class="pred-bar-fill" style="width:68%;background:var(--green)"></div>
+            </div>
+            <div class="pred-pct" style="color:var(--green)">68%</div>
+          </div>
+          <div class="pred-option">
+            <div class="pred-label">❄️ 会降温</div>
+            <div class="pred-bar-bg">
+              <div class="pred-bar-fill" style="width:32%;background:var(--red)"></div>
+            </div>
+            <div class="pred-pct" style="color:var(--red)">32%</div>
+          </div>
+        </div>
+        <button class="pred-vote-btn">参与预测</button>
+        <div class="pred-count">已有 1,243 人投票</div>
+      </div>
+    </div>
+
+    <!-- My Influence -->
+    <div class="sidebar-section">
+      <div class="section-label">👤 我的X影响力</div>
+      <div class="my-influence">
+        <div class="influence-input">
+          <input type="text" placeholder="@你的X账号" value="@CryptoKing">
+          <button>查询</button>
+        </div>
+        <div class="influence-result">
+          <div class="influence-row">
+            <span class="influence-topic">BTC话题</span>
+            <span class="influence-rank">前 15%</span>
+          </div>
+          <div class="influence-row">
+            <span class="influence-topic">BNB话题</span>
+            <span class="influence-rank" style="color:var(--green)">前 8% 🏅</span>
+          </div>
+          <div class="influence-row">
+            <span class="influence-topic">DeFi话题</span>
+            <span class="influence-rank">前 23%</span>
+          </div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--text-dim);text-align:center">
+            超越了 <span style="color:var(--gold);font-family:Orbitron">92%</span> 的同类创作者
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-name" id="tt-name"></div>
+  <div class="tooltip-row"><span>情绪</span><span id="tt-sentiment"></span></div>
+  <div class="tooltip-row"><span>热度指数</span><span id="tt-heat"></span></div>
+  <div class="tooltip-row"><span>活跃KOL</span><span id="tt-kols"></span></div>
+  <div class="tooltip-row"><span>24h变化</span><span id="tt-change"></span></div>
+</div>
+
+<script>
+// ─── DATA ───
+const topics = [
+  { name:'BTC ETF',    color:'#F0B90B', size:88, sentiment:'positive', heat:9847, kols:34, change:'+347%', x:0.38, y:0.38 },
+  { name:'BNB生态',    color:'#F0B90B', size:74, sentiment:'positive', heat:7234, kols:28, change:'+82%',  x:0.62, y:0.45 },
+  { name:'监管政策',   color:'#FF4D6D', size:62, sentiment:'negative', heat:5891, kols:19, change:'+124%', x:0.25, y:0.55 },
+  { name:'DeFi',       color:'#4D9FFF', size:55, sentiment:'neutral',  heat:4523, kols:22, change:'+45%',  x:0.70, y:0.62 },
+  { name:'NFT复苏',    color:'#A855F7', size:46, sentiment:'positive', heat:3847, kols:16, change:'+67%',  x:0.45, y:0.68 },
+  { name:'Layer2',     color:'#00D4A0', size:40, sentiment:'positive', heat:3102, kols:14, change:'+38%',  x:0.18, y:0.35 },
+  { name:'Web3游戏',   color:'#A855F7', size:35, sentiment:'positive', heat:2456, kols:11, change:'+29%',  x:0.78, y:0.30 },
+  { name:'稳定币',     color:'#4D9FFF', size:30, sentiment:'neutral',  heat:1987, kols:9,  change:'-12%',  x:0.55, y:0.25 },
+  { name:'AI+Crypto',  color:'#00D4A0', size:42, sentiment:'positive', heat:3567, kols:13, change:'+156%', x:0.32, y:0.22 },
+  { name:'ETH升级',    color:'#4D9FFF', size:38, sentiment:'positive', heat:2890, kols:12, change:'+71%',  x:0.82, y:0.52 },
+];
+
+const topicRanking = [
+  { name:'BTC ETF',   change:'+347%', color:'#F0B90B', up:true },
+  { name:'AI+Crypto', change:'+156%', color:'#00D4A0', up:true },
+  { name:'监管政策',  change:'+124%', color:'#FF4D6D', up:true },
+  { name:'BNB生态',   change:'+82%',  color:'#F0B90B', up:true },
+  { name:'ETH升级',   change:'+71%',  color:'#4D9FFF', up:true },
+];
+
+const kolRanking = [
+  { name:'CZ_Binance',   topic:'BNB生态',  score:'98.4', change:'+234%', avatar:'CZ', color:'#F0B90B' },
+  { name:'WuBlockchain', topic:'BTC ETF',  score:'94.1', change:'+187%', avatar:'W',  color:'#4D9FFF' },
+  { name:'Pentosh1',     topic:'DeFi',     score:'89.7', change:'+145%', avatar:'P',  color:'#00D4A0' },
+  { name:'AltcoinGordon',topic:'NFT复苏',  score:'85.2', change:'+132%', avatar:'AG', color:'#A855F7' },
+  { name:'CryptoCobain', topic:'Layer2',   score:'81.9', change:'+98%',  avatar:'CC', color:'#FF4D6D' },
+];
+
+// Render topic list
+const topicListEl = document.getElementById('topicList');
+topicRanking.forEach((t, i) => {
+  topicListEl.innerHTML += `
+    <div class="topic-item">
+      <span class="topic-rank">${String(i+1).padStart(2,'0')}</span>
+      <div class="topic-dot" style="background:${t.color};box-shadow:0 0 6px ${t.color}44"></div>
+      <span class="topic-name">${t.name}</span>
+      <span class="topic-change ${t.up?'up':'down'}">${t.up?'▲':'▼'} ${t.change}</span>
+    </div>`;
+});
+
+// Render KOL list
+const kolListEl = document.getElementById('kolList');
+kolRanking.forEach(k => {
+  kolListEl.innerHTML += `
+    <div class="kol-item">
+      <div class="kol-avatar" style="background:${k.color}22;border-color:${k.color}44;color:${k.color}">${k.avatar}</div>
+      <div class="kol-info">
+        <div class="kol-name">${k.name}</div>
+        <div class="kol-meta">${k.topic}</div>
+      </div>
+      <div class="kol-score">${k.score}<span>↑ ${k.change}</span></div>
+    </div>`;
+});
+
+// ─── CANVAS ───
+const canvas = document.getElementById('bubbleCanvas');
+const ctx = canvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+
+let bubbles = [];
+let animFrame;
+let W, H;
+
+function resize() {
+  W = canvas.width = canvas.offsetWidth;
+  H = canvas.height = canvas.offsetHeight;
+  initBubbles();
+}
+
+function initBubbles() {
+  bubbles = topics.map(t => ({
+    ...t,
+    cx: t.x * W,
+    cy: t.y * H,
+    r: t.size * (Math.min(W,H) / 900),
+    vx: (Math.random()-0.5)*0.3,
+    vy: (Math.random()-0.5)*0.3,
+    phase: Math.random()*Math.PI*2,
+    hovered: false,
+    stormPulse: t.name === 'BTC ETF' ? 0 : -1,
+  }));
+}
+
+function sentimentColor(s) {
+  if(s==='positive') return '#00D4A0';
+  if(s==='negative') return '#FF4D6D';
+  return '#888';
+}
+
+function draw(ts) {
+  ctx.clearRect(0, 0, W, H);
+
+  // Connection lines between nearby bubbles
+  for(let i=0;i<bubbles.length;i++){
+    for(let j=i+1;j<bubbles.length;j++){
+      const a=bubbles[i], b=bubbles[j];
+      const dx=a.cx-b.cx, dy=a.cy-b.cy;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist < 220){
+        const alpha = (1 - dist/220)*0.12;
+        ctx.beginPath();
+        ctx.moveTo(a.cx, a.cy);
+        ctx.lineTo(b.cx, b.cy);
+        ctx.strokeStyle = `rgba(240,185,11,${alpha})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+
+  bubbles.forEach(b => {
+    const t = ts * 0.001;
+    const breathe = 1 + Math.sin(t * 0.8 + b.phase) * 0.04;
+    const r = b.r * breathe * (b.hovered ? 1.12 : 1);
+
+    // Storm ring
+    if(b.stormPulse >= 0) {
+      b.stormPulse = (b.stormPulse + 0.02) % 1;
+      const pulseR = r + b.stormPulse * 40;
+      const pulseAlpha = (1 - b.stormPulse) * 0.5;
+      ctx.beginPath();
+      ctx.arc(b.cx, b.cy, pulseR, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(255,77,109,${pulseAlpha})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    // Outer glow
+    const glow = ctx.createRadialGradient(b.cx, b.cy, r*0.5, b.cx, b.cy, r*1.8);
+    glow.addColorStop(0, b.color+'28');
+    glow.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(b.cx, b.cy, r*1.8, 0, Math.PI*2);
+    ctx.fillStyle = glow;
+    ctx.fill();
+
+    // Main bubble
+    const grad = ctx.createRadialGradient(b.cx-r*0.3, b.cy-r*0.3, r*0.1, b.cx, b.cy, r);
+    grad.addColorStop(0, b.color+'55');
+    grad.addColorStop(0.6, b.color+'22');
+    grad.addColorStop(1, b.color+'08');
+    ctx.beginPath();
+    ctx.arc(b.cx, b.cy, r, 0, Math.PI*2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Border
+    ctx.beginPath();
+    ctx.arc(b.cx, b.cy, r, 0, Math.PI*2);
+    ctx.strokeStyle = b.hovered ? b.color+'CC' : b.color+'55';
+    ctx.lineWidth = b.hovered ? 2 : 1;
+    ctx.stroke();
+
+    // Inner highlight
+    const hl = ctx.createRadialGradient(b.cx-r*0.35, b.cy-r*0.35, 0, b.cx-r*0.25, b.cy-r*0.25, r*0.5);
+    hl.addColorStop(0, 'rgba(255,255,255,0.15)');
+    hl.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(b.cx, b.cy, r, 0, Math.PI*2);
+    ctx.fillStyle = hl;
+    ctx.fill();
+
+    // Sentiment dot
+    ctx.beginPath();
+    ctx.arc(b.cx + r*0.55, b.cy - r*0.55, 5, 0, Math.PI*2);
+    ctx.fillStyle = sentimentColor(b.sentiment);
+    ctx.fill();
+
+    // Label
+    ctx.save();
+    ctx.font = `bold ${Math.max(11, r*0.28)}px 'Noto Sans SC', sans-serif`;
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 8;
+    ctx.fillText(b.name, b.cx, b.cy - 4);
+    ctx.restore();
+
+    // Heat label
+    ctx.save();
+    ctx.font = `${Math.max(9, r*0.2)}px 'Orbitron', sans-serif`;
+    ctx.fillStyle = b.color+'BB';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(formatNum(b.heat), b.cx, b.cy + r*0.28);
+    ctx.restore();
+
+    // Float animation
+    b.cx += b.vx;
+    b.cy += b.vy;
+    if(b.cx < r+20 || b.cx > W-r-20) b.vx *= -1;
+    if(b.cy < r+60 || b.cy > H-r-20) b.vy *= -1;
+  });
+
+  animFrame = requestAnimationFrame(draw);
+}
+
+function formatNum(n) {
+  if(n>=1000) return (n/1000).toFixed(1)+'K';
+  return n;
+}
+
+// Mouse interaction
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  let hit = null;
+
+  bubbles.forEach(b => {
+    const dx=mx-b.cx, dy=my-b.cy;
+    b.hovered = dx*dx+dy*dy < b.r*b.r;
+    if(b.hovered) hit=b;
+  });
+
+  if(hit) {
+    canvas.style.cursor = 'pointer';
+    document.getElementById('tt-name').textContent = hit.name;
+    document.getElementById('tt-sentiment').textContent = hit.sentiment==='positive'?'🟢 正面':hit.sentiment==='negative'?'🔴 负面':'⚪ 中性';
+    document.getElementById('tt-heat').textContent = hit.heat.toLocaleString();
+    document.getElementById('tt-kols').textContent = hit.kols + ' 位';
+    document.getElementById('tt-change').textContent = hit.change;
+    document.getElementById('tt-change').style.color = hit.change.startsWith('+')?'#00D4A0':'#FF4D6D';
+    tooltip.style.left = (e.clientX + 16) + 'px';
+    tooltip.style.top  = (e.clientY - 10) + 'px';
+    tooltip.classList.add('visible');
+  } else {
+    canvas.style.cursor = 'default';
+    tooltip.classList.remove('visible');
+  }
+});
+
+canvas.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
+
+function setTime(btn, val) {
+  document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+window.addEventListener('resize', resize);
+resize();
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
